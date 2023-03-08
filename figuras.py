@@ -10,7 +10,7 @@ def convertir_imagenes_escala_grises(imagen):
 
 def dilatar_mascara_get_canny(imagen):
     canny = cv2.Canny(imagen, 10, 150)
-    return cv2.dilate(canny, None, iterations=1)
+    return cv2.dilate(canny, None, iterations=3)
 
 def guardar_imagen(nombre_imagen, imagen):
     cv2.imwrite('output/' + nombre_imagen, imagen)
@@ -36,7 +36,23 @@ for imagen in os.listdir('input'):
     for cnt in cnts:
         x,y,w,h = cv2.boundingRect(cnt)
         if w > img.shape[1] * 0.25:
-            img = cv2.rectangle(img,(x,y),(x+w,y+h),(0,255,0),2)
+            # img = cv2.rectangle(img,(x,y),(x+w,y+h),(0,255,0),2)
+            temp = img[y:y+h, x:x+w]
+            temp = convertir_imagenes_escala_grises(temp)
+            temp = cv2.threshold(temp, 128, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
+            print(np.sum(temp != 0))
+            print(temp.shape[0] * temp.shape[1])
+            """ cv2.imshow("temp", temp)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows() """
+            if int((np.sum(temp != 0) / (temp.shape[0] * temp.shape[1]) * 100)) > 15:
+                img = cv2.rectangle(img,(x,y),(x+w,y+h),(0,255,0),2)
+            else:
+                img = cv2.rectangle(img,(x,y),(x+w,y+h),(0,0,255),2)
+            """ print(temp.shape[2])
+            print("Total Pixeles: " + str(np.sum(temp)))
+            print("Pixeles Blancos: " + str(np.sum(temp != 0)))
+            print("Division: " + str(int((np.sum(temp != 0) / (temp.shape[0] * temp.shape[1]) * 100)))) """
         else:
             img = cv2.rectangle(img,(x,y),(x+w,y+h),(0,0,255),2)
     
